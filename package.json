@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+  "start": "npx playwright install && node index.js"
+}
   },
   "dependencies": {
     "playwright": "^1.42.0",
