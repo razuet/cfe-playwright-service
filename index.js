@@ -21,6 +21,11 @@ app.post("/cfe", async (req, res) => {
       ]
     });
 
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    });
+
     const page = await context.newPage();
 
     // 1. Ir a login
@@ -28,21 +33,21 @@ app.post("/cfe", async (req, res) => {
 
     await page.waitForTimeout(5000);
 
-    // 2. Esperar redirect después de login manual (temporal)
+    // 2. Esperar carga (NO login real aún)
     await page.waitForLoadState("networkidle");
 
-    // 3. Forzar navegación a Mi Espacio
+    // 3. Intentar entrar a Mi Espacio
     await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/", {
       waitUntil: "networkidle"
     });
 
     await page.waitForTimeout(5000);
 
-    // 🔥 DEBUG REAL
+    // DEBUG HTML
     const content = await page.content();
     console.log("DEBUG_HTML:", content.slice(0, 1000));
 
-    // 4. Extraer datos
+    // Extraer datos
     const data = await page.evaluate(() => {
       const text = document.body.innerText;
 
@@ -74,28 +79,6 @@ app.post("/cfe", async (req, res) => {
       success: false,
       error: error.message
     });
-  }
-});
-
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-    });
-
-    const page = await context.newPage();
-
-    await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/Login.aspx");
-
-    await page.waitForTimeout(3000);
-
-    const title = await page.title();
-
-    await browser.close();
-
-    res.json({ success: true, title });
-  } catch (error) {
-    if (browser) await browser.close();
-    res.status(500).json({ success: false, error: error.message });
   }
 });
 
