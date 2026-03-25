@@ -28,26 +28,19 @@ app.post("/cfe", async (req, res) => {
 
     const page = await context.newPage();
 
-    // 1. Ir a login
     await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/Login.aspx");
 
     await page.waitForTimeout(5000);
 
-    // 2. Esperar carga (NO login real aún)
-    await page.waitForLoadState("networkidle");
-
-    // 3. Intentar entrar a Mi Espacio
     await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/", {
       waitUntil: "networkidle"
     });
 
     await page.waitForTimeout(5000);
 
-    // DEBUG HTML
     const content = await page.content();
     console.log("DEBUG_HTML:", content.slice(0, 1000));
 
-    // Extraer datos
     const data = await page.evaluate(() => {
       const text = document.body.innerText;
 
