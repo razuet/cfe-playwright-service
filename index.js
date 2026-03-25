@@ -28,6 +28,67 @@ app.post("/cfe", async (req, res) => {
 
     const page = await context.newPage();
 
+    // 1. Ir a login
+    await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/Login.aspx");
+
+    await page.waitForTimeout(5000);
+
+    // 2. Esperar redirect después de login manual (temporal)
+    await page.waitForLoadState("networkidle");
+
+    // 3. Forzar navegación a Mi Espacio
+    await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/", {
+      waitUntil: "networkidle"
+    });
+
+    await page.waitForTimeout(5000);
+
+    // 🔥 DEBUG REAL
+    const content = await page.content();
+    console.log("DEBUG_HTML:", content.slice(0, 1000));
+
+    // 4. Extraer datos
+    const data = await page.evaluate(() => {
+      const text = document.body.innerText;
+
+      const amountMatch = text.match(/\$\s?[\d,]+\.\d{2}/);
+      const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
+
+      return {
+        amount: amountMatch ? amountMatch[0] : null,
+        due_date: dateMatch ? dateMatch[0] : null,
+        preview: text.slice(0, 300)
+      };
+    });
+
+    if (!data.amount) {
+      throw new Error("SCRAPING FAILED");
+    }
+
+    await browser.close();
+
+    res.json({
+      success: true,
+      ...data
+    });
+
+  } catch (error) {
+    if (browser) await browser.close();
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    });
+
+    const page = await context.newPage();
+
     await page.goto("https://app.cfe.mx/Aplicaciones/CFE/MiEspacio/Login.aspx");
 
     await page.waitForTimeout(3000);
