@@ -3,6 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node index.js"
+    "startCommand": "node railway/server.js"
   }
 }
